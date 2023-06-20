@@ -26,24 +26,16 @@ let engine
 let scene
 let player
 let pbb
-let playerPosition = new BABYLON.Vector3(0, 0, 0);
-
-Object.defineProperty(window, 'playerPosition', {
-    get: function () {
-        return playerPosition;
-    },
-    set: function (value) {
-        playerPosition = value;
-        if (scene.getMeshByName("player") != undefined) {
-            let player = scene.getMeshByName("player");
-            player.position = playerPosition;
-        }
-    }
-});
+let marker
 
 const createScene = async (canvas) => {
     engine = new BABYLON.Engine(canvas)
     scene = new BABYLON.Scene(engine)
+
+    await loadMap("arivaltestarea.glb");
+    await loadPlayer(scene, engine, canvas);
+    playerBoundingBox();
+    // loadTeleportArea(new BABYLON.Vector3(0, 4, -50));
 
     // Create a button
     let button = GUI.Button.CreateSimpleButton("inspectorButton", "Show Inspector");
@@ -86,10 +78,6 @@ const createScene = async (canvas) => {
     let room = client.joinOrCreate("my_room");
     console.log("Connected to Colyseus server!");
     */
-    await loadMap("arival interior tes.glb");
-    await loadPlayer(scene, engine, canvas);
-    playerBoundingBox();
-    loadTeleportArea(new BABYLON.Vector3(0, 4, -50));
 
     /* // create a box
     const box = BABYLON.MeshBuilder.CreateBox('box', { size: 1 }, scene)
@@ -275,6 +263,40 @@ const loadPlayer = (scene, engine, canvas) => {
         camera.upperRadiusLimit = 5;
         camera.attachControl(canvas);
 
+        // Minimap
+        var mm = new BABYLON.FreeCamera("minimap", new BABYLON.Vector3(0, 300, 0), scene);
+        mm.layerMask = 1;
+        mm.setTarget(new BABYLON.Vector3(0.1, 0.1, 0.1));
+        mm.mode = BABYLON.Camera.ORTHOGRAPHIC_CAMERA;
+        mm.orthoLeft = -400 / 2;
+        mm.orthoRight = 400 / 2;
+        mm.orthoTop = 400 / 2;
+        mm.orthoBottom = -400 / 2;
+        mm.rotation.y = 0;
+        var xstart = 0.85,
+            ystart = 0.75;
+        var width = 1 - xstart,
+            height = 1 - ystart;
+        mm.viewport = new BABYLON.Viewport(0.01 * 2, 0, 0.195 * 2, 0.18 * 2);
+        mm.renderingGroupId = 1;
+
+        camera.viewport = new BABYLON.Viewport(0, 0, 1, 1);
+        scene.activeCamera = camera;
+        scene.activeCameras.push(camera);
+        camera.attachControl(canvas, true);
+        scene.activeCameras.push(mm);
+        mm.layerMask = 1
+        camera.layerMask = 2
+
+        const greenMaterial = new BABYLON.StandardMaterial("greenMaterial", scene);
+        greenMaterial.diffuseColor = new BABYLON.Color3(0, 1, 0);
+
+        const radius = 7;
+        const tessellation = 64;
+        marker = BABYLON.MeshBuilder.CreateDisc("circle", { radius, tessellation }, scene);
+        marker.material = greenMaterial;
+        marker.rotation.x = Math.PI / 2;
+
         //var CharacterController = org.ssatguru.babylonjs.component.CharacterController;
         var cc = new CharacterController(player, camera, scene, myAgmap);
         // cc.setupConfig(myAgmap);
@@ -370,6 +392,7 @@ const loadPlayer = (scene, engine, canvas) => {
         engine.runRenderLoop(function () {
             pbb.position = new BABYLON.Vector3(player.position.x, player.position.y + 1, player.position.z);
             pbb.rotation = new BABYLON.Vector3(player.rotation.x, player.rotation.y, player.rotation.z);
+            marker.position = new BABYLON.Vector3(player.position.x, player.position.y + 99, player.position.z);
 
             scene.render();
             //update stats
