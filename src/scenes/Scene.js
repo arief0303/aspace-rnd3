@@ -37,56 +37,17 @@ const createScene = async (canvas) => {
     playerBoundingBox();
     // loadTeleportArea(new BABYLON.Vector3(0, 4, -50));
 
-    // Create a button
-    let button = GUI.Button.CreateSimpleButton("inspectorButton", "Show Inspector");
-    button.width = "150px";
-    button.height = "40px";
-    button.color = "white";
-    button.cornerRadius = 20;
-    button.horizontalAlignment = GUI.Control.HORIZONTAL_ALIGNMENT_LEFT;
-    button.verticalAlignment = GUI.Control.VERTICAL_ALIGNMENT_BOTTOM;
-    button.left = "10px";
-    button.bottom = "10px";
-    button.paddingLeft = "10px";
-    button.paddingBottom = "10px";
-
-    // Add a click event to the button
-    button.onPointerUpObservable.add(() => {
-        Inspector.Show(scene, {
-            embedMode: true,
-            handleResize: true,
-            overlay: true
-        });
+    Inspector.Show(scene, {
+        embedMode: true,
+        handleResize: true,
+        overlay: true
     });
-
-    // Add the button to the GUI
-    let advancedTexture = GUI.AdvancedDynamicTexture.CreateFullscreenUI("UI");
-    advancedTexture.addControl(button);
 
     // Add event listener to window object to auto-resize the canvas
     window.addEventListener("resize", () => {
         engine.resize();
         console.log("Resizing window...");
     });
-
-    /* 
-    let client = new Colyseus.Client("ws://localhost:2567");
-    console.log("Connecting to Colyseus server...");
-    //
-    // Connect with Colyseus server
-    //
-    let room = client.joinOrCreate("my_room");
-    console.log("Connected to Colyseus server!");
-    */
-
-    /* // create a box
-    const box = BABYLON.MeshBuilder.CreateBox('box', { size: 1 }, scene)
-    box.position = new BABYLON.Vector3(0, 1, 2)
-    box.checkCollisions = true */
-
-    // Our built-in 'ground' shape.
-    // const ground = BABYLON.MeshBuilder.CreateGround("ground", { width: 24, height: 24 }, scene);
-    // ground.checkCollisions = true;
 
     // create a light
     const light = new BABYLON.HemisphericLight(
@@ -97,54 +58,6 @@ const createScene = async (canvas) => {
 
     return { engine, scene };
 };
-
-const playerBoundingBox = () => {
-    var matBB = new BABYLON.StandardMaterial("matBB", scene);
-    matBB.emissiveColor = new BABYLON.Color3(1, 1, 1);
-    matBB.wireframe = true;
-
-    pbb = BABYLON.Mesh.CreateBox("pbb", 1, scene);
-    pbb.scaling = new BABYLON.Vector3(0.6, 2, 0.4);
-    pbb.material = matBB;
-}
-
-const loadTeleportArea = (position) => {
-    let teleportBox = BABYLON.MeshBuilder.CreateBox("box", { size: 2 }, scene);
-    teleportBox.position = position;
-    teleportBox.scaling = new BABYLON.Vector3(1, 2, 1);
-    let material = new BABYLON.StandardMaterial("boxMaterial", scene);
-    material.diffuseColor = new BABYLON.Color3(0.5, 0.5, 1);
-    material.alpha = 0.5;
-    teleportBox.material = material;
-    teleportBox.computeWorldMatrix(true);
-    teleportBox.actionManager = new BABYLON.ActionManager(scene);
-    teleportBox.actionManager.registerAction(new BABYLON.ExecuteCodeAction({
-        trigger: BABYLON.ActionManager.OnIntersectionEnterTrigger,
-        parameter: pbb
-    }, function () {
-        console.log("intersect");
-        scene.getMeshByName("map").dispose();
-        teleportBox.dispose();
-        loadMap("arival interior.glb");
-        if (scene.getMeshByName("player") != undefined) {
-            let player = scene.getMeshByName("player");
-            player.position = new BABYLON.Vector3(0, 1, 0);
-        }
-    }));
-}
-
-// async function loadMap(scene, engine, map) {
-const loadMap = async (map) => {
-    engine.displayLoadingUI();
-    const importPromise = await BABYLON.SceneLoader.ImportMeshAsync("", "assets/env/", map, scene);
-    importPromise.meshes.forEach(m => {
-        m.checkCollisions = true;
-        m.cullingStrategy = BABYLON.AbstractMesh.CULLINGSTRATEGY_OPTIMISTIC_INCLUSION; // set culling strategy to improve performance
-        m.freezeWorldMatrix(); // freeze world matrix to save resources
-    });
-    importPromise.meshes[0].name = "map";
-    engine.hideLoadingUI();
-}
 
 const loadPlayer = (scene, engine, canvas) => {
     BABYLON.SceneLoader.ImportMesh("", "assets/player/", "ybot2.glb", scene, (meshes, particleSystems, skeletons, animationGroups) => {
@@ -168,71 +81,6 @@ const loadPlayer = (scene, engine, canvas) => {
             "idleJump": animationGroups[2]
         };
 
-        /* // Create the GUI
-        const gui = GUI.AdvancedDynamicTexture.CreateFullscreenUI("UI");
-
-        // Create the button
-        const button = GUI.Button.CreateSimpleButton("teleportButton", "Teleport Player");
-        button.width = "150px";
-        button.height = "40px";
-        button.color = "white";
-        button.background = "green";
-        button.onPointerUpObservable.add(() => {
-            // Set the new position
-            player.position = new BABYLON.Vector3(100, 0, 50);
-        });
-
-        // Add the button to the GUI
-        gui.addControl(button); */
-
-        // Create the GUI
-        /* const gui = GUI.AdvancedDynamicTexture.CreateFullscreenUI("UI");
-
-        // Create the button
-        const happyBtn = GUI.Button.CreateSimpleButton("happyButton", "Happy");
-        happyBtn.width = "150px";
-        happyBtn.height = "40px";
-        happyBtn.color = "black";
-        happyBtn.background = "white";
-        happyBtn.horizontalAlignment = GUI.Control.HORIZONTAL_ALIGNMENT_LEFT;
-        happyBtn.onPointerUpObservable.add(() => {
-            // Set the new position
-            animationGroups[0].play();
-        });
-
-        // Add the button to the GUI
-        gui.addControl(happyBtn);
-
-        const waveBtn = GUI.Button.CreateSimpleButton("waveButton", "Wave");
-        waveBtn.width = "150px";
-        waveBtn.height = "40px";
-        waveBtn.color = "black";
-        waveBtn.background = "white";
-        waveBtn.horizontalAlignment = GUI.Control.HORIZONTAL_ALIGNMENT_LEFT;
-        waveBtn.top = `${happyBtn.heightInPixels + 10}px`; // Set the top property
-        waveBtn.onPointerUpObservable.add(() => {
-            // Set the new position
-            animationGroups[12].play();
-        });
-
-        // Add the button to the GUI
-        gui.addControl(waveBtn);
-
-        const sadBtn = GUI.Button.CreateSimpleButton("sadButton", "Sad");
-        sadBtn.width = "150px";
-        sadBtn.height = "40px";
-        sadBtn.color = "black";
-        sadBtn.background = "white";
-        sadBtn.horizontalAlignment = GUI.Control.HORIZONTAL_ALIGNMENT_LEFT;
-        sadBtn.top = `${parseInt(waveBtn.top) + waveBtn.heightInPixels + 10}px`; // Set the top property
-        sadBtn.onPointerUpObservable.add(() => {
-            // Set the new position
-            animationGroups[7].play();
-        });
-
-        // Add the button to the GUI
-        gui.addControl(sadBtn); */
-
         //if the skeleton does not have any animation ranges then set them as below
         // setAnimationRanges(skeleton);
         //rotate the camera behind the player
@@ -241,12 +89,7 @@ const loadPlayer = (scene, engine, canvas) => {
         var target = new BABYLON.Vector3(player.position.x, player.position.y + 1.5, player.position.z);
         camera = new BABYLON.ArcRotateCamera("ArcRotateCamera", alpha, beta, 5, target, scene);
         camera.name = "camera";
-        /*                     function followBehindMesh() {
-                                camera.target = new BABYLON.Vector3(player.position.x, player.position.y + 1.5, player.position.z);
-                                camera.radius = 6;
-                            }
-        
-                            scene.registerBeforeRender(followBehindMesh); */
+
         //standard camera setting
         camera.wheelPrecision = 15;
         //
@@ -262,40 +105,6 @@ const loadPlayer = (scene, engine, canvas) => {
         //how far can the camera go from the player
         camera.upperRadiusLimit = 5;
         camera.attachControl(canvas);
-
-        // Minimap
-        var mm = new BABYLON.FreeCamera("minimap", new BABYLON.Vector3(0, 300, 0), scene);
-        mm.layerMask = 1;
-        mm.setTarget(new BABYLON.Vector3(0.1, 0.1, 0.1));
-        mm.mode = BABYLON.Camera.ORTHOGRAPHIC_CAMERA;
-        mm.orthoLeft = -400 / 2;
-        mm.orthoRight = 400 / 2;
-        mm.orthoTop = 400 / 2;
-        mm.orthoBottom = -400 / 2;
-        mm.rotation.y = 0;
-        var xstart = 0.85,
-            ystart = 0.75;
-        var width = 1 - xstart,
-            height = 1 - ystart;
-        mm.viewport = new BABYLON.Viewport(0.01 * 2, 0, 0.195 * 2, 0.18 * 2);
-        mm.renderingGroupId = 1;
-
-        camera.viewport = new BABYLON.Viewport(0, 0, 1, 1);
-        scene.activeCamera = camera;
-        scene.activeCameras.push(camera);
-        camera.attachControl(canvas, true);
-        scene.activeCameras.push(mm);
-        mm.layerMask = 1
-        camera.layerMask = 2
-
-        const greenMaterial = new BABYLON.StandardMaterial("greenMaterial", scene);
-        greenMaterial.diffuseColor = new BABYLON.Color3(0, 1, 0);
-
-        const radius = 7;
-        const tessellation = 64;
-        marker = BABYLON.MeshBuilder.CreateDisc("circle", { radius, tessellation }, scene);
-        marker.material = greenMaterial;
-        marker.rotation.x = Math.PI / 2;
 
         //var CharacterController = org.ssatguru.babylonjs.component.CharacterController;
         var cc = new CharacterController(player, camera, scene, myAgmap);
@@ -334,59 +143,8 @@ const loadPlayer = (scene, engine, canvas) => {
         animationGroups[0].stop(); //stop default animation from playing overlapping with idle anim
         cc.start();
 
-
-        //show joystick only on mobile devices
-        if (/Mobi|Android/i.test(navigator.userAgent)) {
-            let joystick = new JoystickController(
-                {
-                    maxRange: 70,
-                    level: 10,
-                    radius: 50,
-                    joystickRadius: 30,
-                    opacity: 0.5,
-                    leftToRight: false,
-                    bottomToUp: true,
-                    containerClass: "joystick-container",
-                    controllerClass: "joystick-controller",
-                    joystickClass: "joystick",
-                    distortion: true,
-                    y: "15%",
-                },
-                ({ x, y, leveledX, leveledY, distance, angle }) => {
-                    console.log(x, y, leveledX, leveledY, distance, angle)
-                    if (y > 45) {
-                        cc.run(true)
-                    }
-
-                    else if (y < 45 && y > 0) {
-                        cc.run(false)
-                        cc.walk(true)
-                    }
-
-                    else if (y <= -45) {
-                        cc.walkBack(true);
-                    }
-
-                    else if (y > -45 && y <= 45) {
-                        cc.walk(false)
-                        cc.walkBack(false);
-                        cc.run(false)
-                    }
-
-                    if (x > 40) {
-                        cc.turnRight(true);
-                    }
-                    if (x < -40) {
-                        cc.turnLeft(true);
-                    }
-
-                    if (x <= 40 && x > -40) {
-                        cc.turnLeft(false);
-                        cc.turnRight(false);
-                    }
-                }
-            );
-        }
+        createJoystick(scene, canvas);
+        mapTraversal(scene, canvas);
 
         // Render loop
         engine.runRenderLoop(function () {
@@ -400,7 +158,154 @@ const loadPlayer = (scene, engine, canvas) => {
             statsMemory.update();
         });
     });
-}
+};
+
+const loadMap = async (map) => {
+    engine.displayLoadingUI();
+    const importPromise = await BABYLON.SceneLoader.ImportMeshAsync("", "assets/env/", map, scene);
+    importPromise.meshes.forEach(m => {
+        m.checkCollisions = true;
+        m.cullingStrategy = BABYLON.AbstractMesh.CULLINGSTRATEGY_OPTIMISTIC_INCLUSION; // set culling strategy to improve performance
+        m.freezeWorldMatrix(); // freeze world matrix to save resources
+    });
+    importPromise.meshes[0].name = "map";
+    engine.hideLoadingUI();
+};
+
+const mapTraversal = (scene, canvas) => {
+    // Minimap
+    var mm = new BABYLON.FreeCamera("minimap", new BABYLON.Vector3(0, 300, 0), scene);
+    mm.setTarget(new BABYLON.Vector3(0.1, 0.1, 0.1));
+    mm.mode = BABYLON.Camera.ORTHOGRAPHIC_CAMERA;
+    mm.orthoLeft = -400 / 2;
+    mm.orthoRight = 400 / 2;
+    mm.orthoTop = 400 / 2;
+    mm.orthoBottom = -400 / 2;
+    mm.rotation.y = 0;
+    var xstart = 0.85,
+        ystart = 0.75;
+    var width = 1 - xstart,
+        height = 1 - ystart;
+    mm.viewport = new BABYLON.Viewport(0.01 * 2, 0, 0.195 * 2, 0.18 * 2);
+    mm.renderingGroupId = 1;
+
+    camera.viewport = new BABYLON.Viewport(0, 0, 1, 1);
+    scene.activeCamera = camera;
+    scene.activeCameras.push(camera);
+    camera.attachControl(canvas, true);
+    scene.activeCameras.push(mm);
+    mm.layerMask = 1
+    camera.layerMask = 2
+
+    const greenMaterial = new BABYLON.StandardMaterial("greenMaterial", scene);
+    greenMaterial.diffuseColor = new BABYLON.Color3(0, 1, 0);
+
+    const radius = 7;
+    const tessellation = 64;
+    marker = BABYLON.MeshBuilder.CreateDisc("circle", { radius, tessellation }, scene);
+    marker.material = greenMaterial;
+    marker.rotation.x = Math.PI / 2;
+};
+
+const networkManager = async () => {
+    let client = new Colyseus.Client("ws://localhost:2567");
+    console.log("Connecting to Colyseus server...");
+    //
+    // Connect with Colyseus server
+    //
+    let room = client.joinOrCreate("my_room");
+    console.log("Connected to Colyseus server!");
+};
+
+const loadTeleportArea = (position) => {
+    let teleportBox = BABYLON.MeshBuilder.CreateBox("box", { size: 2 }, scene);
+    teleportBox.position = position;
+    teleportBox.scaling = new BABYLON.Vector3(1, 2, 1);
+    let material = new BABYLON.StandardMaterial("boxMaterial", scene);
+    material.diffuseColor = new BABYLON.Color3(0.5, 0.5, 1);
+    material.alpha = 0.5;
+    teleportBox.material = material;
+    teleportBox.computeWorldMatrix(true);
+    teleportBox.actionManager = new BABYLON.ActionManager(scene);
+    teleportBox.actionManager.registerAction(new BABYLON.ExecuteCodeAction({
+        trigger: BABYLON.ActionManager.OnIntersectionEnterTrigger,
+        parameter: pbb
+    }, function () {
+        console.log("intersect");
+        scene.getMeshByName("map").dispose();
+        teleportBox.dispose();
+        loadMap("arival interior.glb");
+        if (scene.getMeshByName("player") != undefined) {
+            let player = scene.getMeshByName("player");
+            player.position = new BABYLON.Vector3(0, 1, 0);
+        }
+    }));
+};
+
+const createJoystick = (scene, canvas) => {
+    //show joystick only on mobile devices
+    if (/Mobi|Android/i.test(navigator.userAgent)) {
+        let joystick = new JoystickController(
+            {
+                maxRange: 70,
+                level: 10,
+                radius: 50,
+                joystickRadius: 30,
+                opacity: 0.5,
+                leftToRight: false,
+                bottomToUp: true,
+                containerClass: "joystick-container",
+                controllerClass: "joystick-controller",
+                joystickClass: "joystick",
+                distortion: true,
+                y: "15%",
+            },
+            ({ x, y, leveledX, leveledY, distance, angle }) => {
+                console.log(x, y, leveledX, leveledY, distance, angle)
+                if (y > 45) {
+                    cc.run(true)
+                }
+
+                else if (y < 45 && y > 0) {
+                    cc.run(false)
+                    cc.walk(true)
+                }
+
+                else if (y <= -45) {
+                    cc.walkBack(true);
+                }
+
+                else if (y > -45 && y <= 45) {
+                    cc.walk(false)
+                    cc.walkBack(false);
+                    cc.run(false)
+                }
+
+                if (x > 40) {
+                    cc.turnRight(true);
+                }
+                if (x < -40) {
+                    cc.turnLeft(true);
+                }
+
+                if (x <= 40 && x > -40) {
+                    cc.turnLeft(false);
+                    cc.turnRight(false);
+                }
+            }
+        );
+    }
+};
+
+const playerBoundingBox = () => {
+    var matBB = new BABYLON.StandardMaterial("matBB", scene);
+    matBB.emissiveColor = new BABYLON.Color3(1, 1, 1);
+    matBB.wireframe = true;
+
+    pbb = BABYLON.Mesh.CreateBox("pbb", 1, scene);
+    pbb.scaling = new BABYLON.Vector3(0.6, 2, 0.4);
+    pbb.material = matBB;
+};
 
 BABYLON.DefaultLoadingScreen.prototype.displayLoadingUI = function () {
     if (document.getElementById("customLoadingScreenDiv")) {
@@ -430,7 +335,7 @@ BABYLON.DefaultLoadingScreen.prototype.displayLoadingUI = function () {
 BABYLON.DefaultLoadingScreen.prototype.hideLoadingUI = function () {
     document.getElementById("customLoadingScreenDiv").style.display = "none";
     console.log("scene is now loaded");
-}
+};
 
 export const updatePlayerPosition = (scene, newPosition) => {
     // Get the player mesh from the scene
@@ -438,7 +343,7 @@ export const updatePlayerPosition = (scene, newPosition) => {
 
     // Update the player's position
     playerMesh.position = newPosition;
-}
+};
 
 export const updatePlayerRotation = (scene, rotation) => {
     const player = scene.getMeshByName("player");
@@ -448,12 +353,12 @@ export const updatePlayerRotation = (scene, rotation) => {
     //rotate the camera behind the player
     var alpha = -player.rotation.y + 4.69;
     camera.alpha = alpha;
-}
+};
 
 export const happyAnim = (scene) => {
     const player = scene.getMeshByName("player");
     const animGroup = player.animationGroups[0];
     animGroup.play(true);
-}
+};
 
 export { createScene };
