@@ -28,6 +28,36 @@ let player
 let pbb
 let marker
 
+BABYLON.DefaultLoadingScreen.prototype.displayLoadingUI = function () {
+    if (document.getElementById("customLoadingScreenDiv")) {
+        // Do not add a loading screen if there is already one
+        document.getElementById("customLoadingScreenDiv").style.display = "initial";
+        return;
+    }
+    this._loadingDiv = document.createElement("div");
+    this._loadingDiv.id = "customLoadingScreenDiv";
+    this._loadingDiv.innerHTML = "scene is currently loading";
+    var customLoadingScreenCss = document.createElement('style');
+    customLoadingScreenCss.type = 'text/css';
+    customLoadingScreenCss.innerHTML = `
+    #customLoadingScreenDiv{
+        background-color: #BB464Bcc;
+        color: white;
+        font-size:50px;
+        text-align:center;
+    }
+    `;
+    document.getElementsByTagName('head')[0].appendChild(customLoadingScreenCss);
+    this._resizeLoadingUI();
+    window.addEventListener("resize", this._resizeLoadingUI);
+    document.body.appendChild(this._loadingDiv);
+};
+
+BABYLON.DefaultLoadingScreen.prototype.hideLoadingUI = function () {
+    document.getElementById("customLoadingScreenDiv").style.display = "none";
+    console.log("scene is now loaded");
+};
+
 const createScene = async (canvas) => {
     engine = new BABYLON.Engine(canvas)
     scene = new BABYLON.Scene(engine)
@@ -37,11 +67,11 @@ const createScene = async (canvas) => {
     playerBoundingBox();
     // loadTeleportArea(new BABYLON.Vector3(0, 4, -50));
 
-    Inspector.Show(scene, {
+    /* Inspector.Show(scene, {
         embedMode: true,
         handleResize: true,
         overlay: true
-    });
+    }); */
 
     // Add event listener to window object to auto-resize the canvas
     window.addEventListener("resize", () => {
@@ -59,7 +89,7 @@ const createScene = async (canvas) => {
     return { engine, scene };
 };
 
-const loadPlayer = (scene, engine, canvas) => {
+export const loadPlayer = (scene, engine, canvas) => {
     BABYLON.SceneLoader.ImportMesh("", "assets/player/", "ybot2.glb", scene, (meshes, particleSystems, skeletons, animationGroups) => {
         player = meshes[0];
         player.name = "player";
@@ -144,13 +174,15 @@ const loadPlayer = (scene, engine, canvas) => {
         cc.start();
 
         createJoystick(scene, canvas);
-        mapTraversal(scene, canvas);
+        // mapTraversal(scene, canvas);
 
         // Render loop
         engine.runRenderLoop(function () {
             pbb.position = new BABYLON.Vector3(player.position.x, player.position.y + 1, player.position.z);
             pbb.rotation = new BABYLON.Vector3(player.rotation.x, player.rotation.y, player.rotation.z);
-            marker.position = new BABYLON.Vector3(player.position.x, player.position.y + 99, player.position.z);
+            if (marker != null){
+                marker.position = new BABYLON.Vector3(player.position.x, player.position.y + 99, player.position.z);
+            }
 
             scene.render();
             //update stats
@@ -172,7 +204,7 @@ const loadMap = async (map) => {
     engine.hideLoadingUI();
 };
 
-const mapTraversal = (scene, canvas) => {
+export const mapTraversal = (scene, canvas) => {
     // Minimap
     var mm = new BABYLON.FreeCamera("minimap", new BABYLON.Vector3(0, 300, 0), scene);
     mm.setTarget(new BABYLON.Vector3(0.1, 0.1, 0.1));
@@ -305,36 +337,6 @@ const playerBoundingBox = () => {
     pbb = BABYLON.Mesh.CreateBox("pbb", 1, scene);
     pbb.scaling = new BABYLON.Vector3(0.6, 2, 0.4);
     pbb.material = matBB;
-};
-
-BABYLON.DefaultLoadingScreen.prototype.displayLoadingUI = function () {
-    if (document.getElementById("customLoadingScreenDiv")) {
-        // Do not add a loading screen if there is already one
-        document.getElementById("customLoadingScreenDiv").style.display = "initial";
-        return;
-    }
-    this._loadingDiv = document.createElement("div");
-    this._loadingDiv.id = "customLoadingScreenDiv";
-    this._loadingDiv.innerHTML = "scene is currently loading";
-    var customLoadingScreenCss = document.createElement('style');
-    customLoadingScreenCss.type = 'text/css';
-    customLoadingScreenCss.innerHTML = `
-    #customLoadingScreenDiv{
-        background-color: #BB464Bcc;
-        color: white;
-        font-size:50px;
-        text-align:center;
-    }
-    `;
-    document.getElementsByTagName('head')[0].appendChild(customLoadingScreenCss);
-    this._resizeLoadingUI();
-    window.addEventListener("resize", this._resizeLoadingUI);
-    document.body.appendChild(this._loadingDiv);
-};
-
-BABYLON.DefaultLoadingScreen.prototype.hideLoadingUI = function () {
-    document.getElementById("customLoadingScreenDiv").style.display = "none";
-    console.log("scene is now loaded");
 };
 
 export const updatePlayerPosition = (scene, newPosition) => {
