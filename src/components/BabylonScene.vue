@@ -4,16 +4,16 @@
 
 <script>
 import { ref, onMounted } from "@vue/runtime-core";
-import { createScene } from "../scenes/MainScene";
+import { createScene } from "../scenes/BabylonScene";
 
 export default {
   name: "BabylonScene",
   setup() {
     const bjsCanvas = ref(null);
 
-    onMounted(() => {
+    onMounted(async () => {
       if (bjsCanvas.value) {
-        createScene(bjsCanvas.value);
+        await createScene(bjsCanvas.value);
       }
     });
 
