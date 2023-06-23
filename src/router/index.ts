@@ -1,7 +1,7 @@
 import { createRouter, createWebHistory } from 'vue-router'
-import BabylonSceneView from '../views/BabylonSceneView.vue'
-import MainMenuView from '../views/MainMenuView.vue'
-import SettingsView from '../views/SettingsView.vue'
+import BabylonScene from '../components/BabylonScene.vue'
+import MainMenu from '../components/MainMenu.vue'
+import Settings from '../components/Settings.vue'
 
 const router = createRouter({
   history: createWebHistory(import.meta.env.BASE_URL),
@@ -9,17 +9,17 @@ const router = createRouter({
     {
       path: '/',
       name: 'main-menu',
-      component: MainMenuView
+      component: MainMenu
     },
     {
       path: '/play',
       name: 'play',
-      component: BabylonSceneView
+      component: BabylonScene
     },
     {
       path: '/settings',
       name: 'settings',
-      component: SettingsView
+      component: Settings
     }
   ]
 })

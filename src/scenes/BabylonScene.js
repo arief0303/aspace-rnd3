@@ -58,21 +58,20 @@ BABYLON.DefaultLoadingScreen.prototype.hideLoadingUI = function () {
     console.log("scene is now loaded");
 };
 
-const createScene = async (canvas) => {
+export const createScene = async (canvas) => {
     engine = new BABYLON.Engine(canvas)
     scene = new BABYLON.Scene(engine)
 
     await loadMap("demo deui.glb");
-    await loadPlayer(scene, engine, canvas);
+    loadPlayer(scene, engine, canvas);
     playerBoundingBox();
-    ambientSound();
-    // loadTeleportArea(new BABYLON.Vector3(0, 4, -50));
+    // ambientSound();
+    loadTeleportArea(new BABYLON.Vector3(5, 0, 0));
 
-    /* Inspector.Show(scene, {
-        embedMode: true,
-        handleResize: true,
-        overlay: true
-    }); */
+    // get mesh by name "LED" and change material color to green
+    const led = scene.getMeshByName("LED");
+    led.material = new BABYLON.StandardMaterial("ledMat", scene);
+    led.material.diffuseColor = BABYLON.Color3.Green();
 
     // Add event listener to window object to auto-resize the canvas
     window.addEventListener("resize", () => {
@@ -90,13 +89,21 @@ const createScene = async (canvas) => {
     return { engine, scene };
 };
 
+export const showInspector = () => {
+    Inspector.Show(scene, {
+        embedMode: true,
+        handleResize: true,
+        overlay: true
+    });
+}
+
 const ambientSound = () => {
     var sphereMat = new BABYLON.StandardMaterial("sphereMat", scene);
     sphereMat.diffuseColor = BABYLON.Color3.Purple();
     sphereMat.backFaceCulling = false;
     sphereMat.alpha = 0.3;
 
-    var sphereMusic1 = BABYLON.Mesh.CreateSphere("musicsphere", 20, 50, scene);
+    var sphereMusic1 = BABYLON.Mesh.CreateSphere("musicsphere", 20, 30, scene);
     sphereMusic1.material = sphereMat;
     sphereMusic1.position = new BABYLON.Vector3(0, 0, 0);
 
@@ -384,5 +391,3 @@ export const happyAnim = (scene) => {
     const animGroup = player.animationGroups[0];
     animGroup.play(true);
 };
-
-export { createScene };
