@@ -89,14 +89,6 @@ export const createScene = async (canvas) => {
     return { engine, scene };
 };
 
-export const showInspector = () => {
-    Inspector.Show(scene, {
-        embedMode: true,
-        handleResize: true,
-        overlay: true
-    });
-}
-
 const ambientSound = () => {
     var sphereMat = new BABYLON.StandardMaterial("sphereMat", scene);
     sphereMat.diffuseColor = BABYLON.Color3.Purple();
